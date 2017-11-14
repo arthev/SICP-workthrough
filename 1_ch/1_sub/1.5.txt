@@ -1,0 +1,10 @@
+(test 0 (p))
+
+In an interpreter using normal-order evaluation,
+Ben would see the arguments passed to the test function,
+the predicate evaluates to true since (= 0 0) and then
+the function returns 0, which gets printed by the interpreter.
+
+In an applicative-order evaluation,
+the program hangs forever as the interpreter tries to evaluate (p),
+which evaluates to itself, (p), which then loops forever.

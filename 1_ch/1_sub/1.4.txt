@@ -1,0 +1,11 @@
+(define (a-plus-abs-b a b)
+		((if (> b 0) + -) a b))
+
+We use an applicative-order evaluation model for the MIT-Scheme interpreter.
+This means that we evaluate the operator subexpressions first.
+
+Therefore, the first thing to evaluate in this function
+is the ( if (> b 0) + -), which returns + or -, conditionally.
+After that, the compound (+/- a b) gets evaluated.
+
+That is, we use the if to return an operator.

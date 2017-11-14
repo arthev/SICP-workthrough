@@ -1,0 +1,11 @@
+When trying to run the code using the new-if,
+scheme complains of the maximum recursion depth having been exceeded. 
+
+This is because of the fact if is a special form: it evaluates the preciate,
+and then evaluates one of the following combinations.
+
+The call to new-if isn't a special form, but a normal procedure call.
+This means that the interpreter tries to evaluate all the parameters...
+And one of those calls the procedure recursively, leading to an 
+infinitely growing stack of calls that never get evaluated because 
+evaluating one requires adding another call atop it first.

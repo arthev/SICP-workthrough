@@ -1,0 +1,22 @@
+(define (f g) (g 2))
+
+
+What happens when we evaluate (perversely)
+(f f)
+?
+
+
+
+(f f) - the g argument becomes a call to f. The function body of f executes, which
+says to call its argument with 2 as the argument.
+
+So:
+(f f)
+(f 2)
+
+This means that the g argument takes on the value 2.
+the f function body executes, and the evaluator tries to call the g function with 2 as its argument
+
+(2 2)
+now the evaluator tries to evaluate. But the operator slot is now taken up by the value 2,
+which isn't a procedure, so the evaluator complains of 'object not applicable'. (Aka 2 ain't no procedure.)

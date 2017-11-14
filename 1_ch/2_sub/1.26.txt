@@ -1,0 +1,17 @@
+By not using a square procedure,
+Louis has created a tree evaluation inside
+the general logarithmic process. (Aka the main
+algorithm is still logarithmic, but each step inside is
+now 2^n, leading to THETA(ln(2^n)) aka THETA(n).
+
+This is because now, each call to expmod results
+in two more calls to expmod, as the interpreter
+fills in each call in turn. Because of applicative
+order evaluation, using the square procedure, each
+call to expmod is only evaluated once.
+
+
+
+
+((That is, we transforms the inner call from a linear recursive
+process to a tree recursive process.))
