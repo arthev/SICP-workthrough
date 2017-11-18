@@ -1,0 +1,11 @@
+As mentioned in the text,
+the 'something is really just a shorthand
+for (quote something).
+
+Since quoting something wouldn't work if doing
+applicative-order evaluation of the somethings
+first, the quote operator is clearly a special form.
+
+So ''abracadabra is equivalent to (quote (quote abracadabra)).
+This creates a list consisting of 'quote and 'abracadabra.
+The car of which is 'quote, and the cdr of which is ('abracadabra).
