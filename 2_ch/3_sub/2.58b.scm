@@ -36,6 +36,7 @@
 		((=number? a2 0) a1)
 		((and (number? a1) (number? a2))
 		 (+ a1 a2))
+		((equal? a1 a2) (list 2 '* a1))
 		(else (list a1 '+ a2))))
 (define (make-product m1 m2)
   (cond ((or (=number? m1 0) (=number? m2 0)) 0)
