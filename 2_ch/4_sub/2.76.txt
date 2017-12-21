@@ -1,0 +1,33 @@
+Generic operations with explicit dispatch:
+To update the system for a new type, each operation must be updated in turn to check for the new tag and do the correct dispatch.
+To update the system for a new operation, just write up the new uperation, and then set it up to dispatch for the different types 
+(who need their own functions, usually?).
+
+
+
+
+Data-directed style:
+To update the systen for a new type, write up another install package that installs the relevant functions etc. in the table.
+To update the system for a new operation, just have the install packages install the relevant operations too.
+
+
+
+Message-passing style:
+To update the system for a new type, write up a new data structure, aka function typically, which does its own internal dispatch.
+To update the system for a new operation, add that operation to the relevant data objects.
+
+
+
+Most appropriate for a system in which new types are often added:
+Probably the data-directed style, as you can just write up another install package and the new type will behave well and co-exist
+easily with all other types, and the dispatch methods of surface-level functions will already handle the dispatch automatically
+after the install package has been, well, installed.
+
+Most appropriate for a system in which new operations are often added:
+Probably the message-passing style, since new operations can be simply added to the relevant types with little worry over
+attempts to look-up empty slots in a data table, for example. Especially if the different types are set up to handle
+unrecognized messages in an elegant manner.
+
+
+
+
