@@ -1,0 +1,86 @@
+;Library
+(define (make-serializer)
+  (let ((mutex (make-mutex)))
+	(lambda (p)
+	  (define (serialized-p . args)
+		(mutex 'acquire)
+		(let ((val (apply p args)))
+		  (mutex 'release)
+		  val))
+	  serialized-p)))
+(define (make-mutex)
+  (let ((cell (list false)))
+	(define (the-mutex m)
+	  (cond ((eq? m 'acquire)
+			 (if (test-and-set! cell)
+			   (the-mutex 'acquire)))
+			((eq? m 'release) (clear! cell))))
+	the-mutex))
+(define (clear! cell) (set-car! cell false))
+(define (test-and-set! cell)
+  (without-interrupts
+	(lambda ()
+	  (if (car cell)
+		true
+		(begin
+		  (set-car! cell true)
+		  false)))))
+;3.47
+;a)
+(define (make-semaphore n)
+  (define (make-mutex-list n)
+	(if (= n 0)
+	  '()
+	  (cons (make-mutex) (make-mutex-list (-1+ n)))))
+  (let ((cells (make-mutex-list n))
+		(next 0))
+	(define (increment-next!)
+	  (without-interrupts
+		(lambda ()
+		  (set! next (1+ next)
+			next))))
+	(define (decrement-next!)
+	  (without-interrupts
+		(lambda ()
+		  (set! next (-1+ next)
+			next))))
+	(define (the-semaphore m)
+	  (cond ((eq? m 'acquire) 
+			 (if (< next (length cells))
+			   ((list-ref cells (-1+ (increment-next!))) 'acquire)
+			   (the-semaphore 'acquire)))
+			((eq? m 'release)
+			 (if (> next 0)
+			   ((list-ref cells (decrement-next!)) 'release)
+			   (error "release-semaphore called without semaphore being acquired at all.")))))
+	the-semaphore))
+;b)
+(define (make-semaphore n)
+  (define (make-cell-list n)
+	(if (= n 0)
+	  '()
+	  (cons false (make-cell-list (-1+ n)))))
+  (let ((cells (make-cell-list n)))
+	(define (find-acquisition remaining)
+	  (if (null? remaining)
+		(find-acquisition cells)
+		(if (test-and-set! (car remaining))
+		  (find-acquisition (cdr remaining)))))
+	(define (release-a-cell)
+	  (without-interrupts
+		(lambda ()
+		  (let (found (memq true cells))
+			(if found
+			  (set-car! found false)
+			  (error "release-semaphore called without semaphore being acquired at all."))))))
+	(define (the-semaphore m)
+	  (cond ((eq? m 'acquire) (find-acquisition cells))
+			((eq? m 'release) (release-a-cell))))
+	the-semaphore))
+
+
+
+
+
+
+

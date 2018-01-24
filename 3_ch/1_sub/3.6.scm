@@ -1,0 +1,11 @@
+(define rand
+  (let ((x random-init))
+	(lambda (s)
+	  (cond ((equal? s 'generate)
+			 (set! x (rand-update x))
+			 x)
+			((equal? s 'reset)
+			 (lambda (n)
+			   (set! x n)
+			   x))
+			(else (error "Not recognized argument for RAND:" s))))))
