@@ -1,0 +1,7 @@
+I have tested, and writing a map definition
+into the metacircular evaluator works decently.
+
+In contrast, trying to use the inbuilt one gave:
+"Unknown procedure type: APPLY #[compiled-procedure 13 ("list" #x64) #x1a #x1a94a6a].
+
+In other words, it seems like writing in a definition works well because it uses the metacircular evaluator, whereas the in-built map then receives a list containing instructions as the function to apply... But that list contains instructions in the format required by our metacircular evaluator, not the implementation interpreter! Therefore, it regurgitates a complaint.

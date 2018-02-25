@@ -1,0 +1,7 @@
+A simple new syntax for scheme would be
+postfix notation, so that e.g. (+ 1 2 3) instead becoms (1 2 3 +),
+and (if P A B) becomes (P A B if).
+
+This requires changing tagged-list so it checks the last element in an exp instead of the first.
+And it requires changing the different data abstractions so that, e.g. old instances of cadr become car.
+That is, everything 'moves' one slot to the left.

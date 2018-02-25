@@ -1,0 +1,74 @@
+So, assume we have a function:
+(define (halts? p a) ... ) which correctly determines whether any given evaluation of (p a ) halts or not.
+
+Then, we can write the program:
+(define (run-forever) (run-forever))
+(define (try p)
+  (if (halts? p p) (run-forever) 'halted))
+
+Since halts? correctly determines whether any given
+(p a ) evaluation halts or not, we can feed it
+'try' itself as p and a, by evaluating (try try).
+
+So, as can be read from the definition of try,
+try will either run-forever or return 'halted
+as a result of the boolean value returned by
+halts?. So there are two possible outcomes.
+
+Assume the evaluation of (try try) halts.
+Then (halts? try try) will return true,
+and (try try) will call (run-forever).
+
+Assume the evaluation of (try try) runs forever.
+Then (halts? try try) will return false,
+and (try try) will return 'halted.
+
+In other words, given any function (halts? p a)
+which works as described by correctly determining
+for all given p and a whether the evaluation 
+(p a) will halt or not, we are lead by the above
+call to (try try) into a paradox, where
+the evaluation of (try try) can neither run-forever
+or return 'halted, because for any result, it
+should do the opposite, ad infinitum.
+
+Therefore, the function halts? that determines
+for any given p and a whether the evaluation
+(p a) halts or not... simply cannot exisSo, assume we have a function:
+(define (halts? p a) ... ) which correctly determines whether any given evaluation of (p a ) halts or not.
+
+Then, we can write the program:
+(define (run-forever) (run-forever))
+(define (try p)
+  (if (halts? p p) (run-forever) 'halted))
+  
+  Since halts? correctly determines whether any given
+  (p a ) evaluation halts or not, we can feed it
+  'try' itself as p and a, by evaluating (try try).
+  
+  So, as can be read from the definition of try,
+  try will either run-forever or return 'halted
+  as a result of the boolean value returned by h
+  halts?. So there are two possible outcomes.
+  
+  Assume the evaluation of (try try) halts.
+  Then (halts? try try) will return true,
+  and (try try) will call (run-forever),
+.
+
+Assume the evaluation of (try try) runs forever.
+Then (halts? try try) will return false,
+and (try try) will return 'halted.
+
+In other words, given any function (halts? p a)
+which works as described by correctly determining
+for all given p and a whether the evaluation 
+(p a) will halt or not, we are lead by the above
+call to (try try) into a paradox, where
+the evaluation of (try try) can neither run-forever
+or return 'halted, because for any result, it
+should do the opposite, ad infinitum.
+
+Therefore, the function halts? that determines
+for any given p and a whether the evaluation
+(p a) halts or not... simply cannot exist.
