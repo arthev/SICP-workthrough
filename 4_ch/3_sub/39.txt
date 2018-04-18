@@ -1,0 +1,25 @@
+The order trivially doesn't affect the answer.
+
+But I think that in the general case, the order of requirements
+affects the running time of the program!
+
+After all, if some requirement can eliminate large swatches of
+potential solutions, while some other requirements eliminate smaller
+swathes, then having the large elimination first will lead to less
+to search through for subsequent requirements or search-generations.
+
+But do they matter in the specific case of the multiple-dwelling procedure?
+Hmm...
+
+Following that logic, (require (> miller cooper)) ought to be the first requirement,
+since that will eliminate roughly half the search space. Whether other significant
+gains are possible, they're harder to spot, anyhow.
+
+Online, meteorgan suggests moving the distinct? requirement to the end will also
+speed things up since it runs in slower time than the other requirements. I agree.
+
+Perhaps the adjacency requirements re. Fletcher might also be moved up top, since 
+they hit two floors at once each. Also, by doing a <= (less than or equal to one),
+rather than just a less than, we get some cheap semi-distinctivity thrown in. But
+that's outside of the exact exercise problem, since it changes the reqs.
+

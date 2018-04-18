@@ -1,0 +1,39 @@
+a)
+Well, Ben is using an example where an expression
+is called directly and therefore immediately
+evaluated, so he doesn't seem to really address
+Cy's concerns. Basically, he is arguing that, Cy
+should wrap all desirable side-effects in a
+for-each... Which would require quite a change
+in program composition, most likely.
+
+Ben's for-each function argument uses primitives
+in the lazy evaluator, which will result in
+force-its.
+
+b)
+With original eval-sequence:
+(p1 1) -> (1 2)
+(p2 1) -> 1
+
+With Cy's eval-sequence:
+(p1 1) -> (1 2)
+(p2 1) -> (1 2)
+
+c)
+Seems like the set! in p1 doesn't get thunked?
+Yeah, the eval-sequence looks like it'll just evaluate the function call there, whereas in p2 it would
+evaluate a thunk. (force-it also returns the normal
+value in cases where it receives a non-thunk.)
+
+d)
+I don't know, really. I'd need more experience with
+lazy evaluation to really have an opinion. It seems
+like Cy's approach would make the evaluator less
+lazy, though, thus kinda defeating the point. As
+a reformed C programmer, Cy should probably try
+to get comfortable in other computational models
+rather than try to get side-effects to work like
+in C.
+
+

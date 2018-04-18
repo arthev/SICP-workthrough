@@ -1,0 +1,37 @@
+Any program which uses a significant piece of computation more than once will
+benefit from memoization.
+
+Consider the case where a function takes a (fib n) as one of its inputs.
+With applicative-order evaluation, the (fib n) gets evaluated prior to the function.
+With memoized thunks, the (fib n) gets evaluated at one point when needed during the
+function, and then the result gets stored in the thunk itself.
+With non-memoized thunks, the (fib n) will be computed separately each time it's used
+in the function.
+
+
+Common:
+(define count 0)
+(define (id x) (set! count (+ count 1)) x)
+
+(define (square x) (* x x))
+
+Memoized:
+;;; L-Eval input:
+(square (id 10))
+;;; L-Eval value:
+100
+;;; L-Eval input:
+count
+;;; L-Eval value:
+1
+
+
+Non-memoized:
+;;; L-Eval input:
+(square (id 10))
+;;; L-Eval value:
+100
+;;; L-Eval input:
+count
+;;; L-Eval value:
+2

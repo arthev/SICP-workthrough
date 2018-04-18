@@ -1,0 +1,14 @@
+(define (unless->if exp)
+  (list 'if (unless-cond exp) (unless-exceptional exp) (unless-usual exp)))
+
+Example of a situation where it might be useful to have unless available as a procedure, rather than as a special form:
+It would then be possible to send the unless as a functional function argument, and have
+other functions spit out results dependent on that. E.g:
+
+(define (f g)
+  (g some-cond some-exp some-other-exp))
+
+Which might be useful if e.g. maybe you want to compute something sometimes, 
+and output something some other times?
+Would be useful if you could send if and unless and others as the logic operators for something, maybe.
+

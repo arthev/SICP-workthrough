@@ -1,0 +1,28 @@
+(define count 0)
+(define (id x) (set! count (+ count 1)) x)
+
+Give the missing values in the following 
+sequence of interactions, and explain 
+your answers.
+
+
+(define w (id (id 10)))
+;;; L-Eval input:
+count
+;;; L-Eval value:
+1; We have defined w as (id (id 10)). It seems
+the inner id has been evaluated, at least partly,
+because of the set!. But why has the inner id been
+evaluated???????
+;;;wizardbook blog claims it's because of the operator gets evaluated since using actual operator value.
+;;; L-Eval input:
+w
+;;; L-Eval value:
+10; Alright, so id just returns the x value. Ok.
+So since we have now asked for an evaluation of w,
+this means the x has propogated down through the
+two ids.
+;;; L-Eval input:
+count
+;;; L-Eval value:
+2; Since w has been evaluated, that means set! count+1 has happened twice, so now it's at 2. 

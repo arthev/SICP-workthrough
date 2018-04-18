@@ -1,0 +1,2 @@
+As found empirically by trying out the ambeval as provided by the SICP website,
+after removing the requirement of (!ADJ F C), there are five solutions to the puzzle.

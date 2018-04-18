@@ -1,0 +1,13 @@
+eval uses actual-value to evaluate the operator
+before passing it to apply. This is because
+apply checks whether the operator is a primitive
+in order to decide whether to force all values
+or whether to just thunk things through.
+
+So in the case where, say, the operator is a 
+function which returns a primitive arithmetic 
+operator, the actual evaluation wouldn't take
+place, despite probably being expected to.
+
+Also, trying to apply a thunk might generate
+an error.

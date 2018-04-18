@@ -1,0 +1,16 @@
+Yes, Bitdiddle is correct.
+
+Consider the case of i = 7, j = 9 and high = 11.
+Then hsq = 121, whereas ksq = 64 + 81 = 130. Then
+Bitdiddle's version can "short-circuit" out to
+increase i next, since there's no further triplets
+to be found by increasing j and overshooting the 
+high boundary more and more.
+
+Of course, this assumes sufficiently high n to
+ignore the slowth of sqrt and integer?. I.e., 
+it's more efficient in terms of possibilities
+to consider for any given n, but whether it's
+computationally cheaper depends on implementation.
+(But it very probably is for sufficiently high n.)
+

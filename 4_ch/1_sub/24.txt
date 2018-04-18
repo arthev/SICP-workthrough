@@ -1,0 +1,48 @@
+(with-timings
+  (lambda () 
+	(eval 
+	  '(begin (define (fib n)
+				(cond ((= n 0) 0)
+					  ((= n 1) 1)
+					  (else (+ (fib (- n 1)) (fib (- n 2))))))
+			  (fib 25))
+	  the-global-environment))
+  (lambda (run-time gc-time real-time)
+	(write (internal-time/ticks->seconds run-time))
+	(write-char #\space)
+	(write (internal-time/ticks->seconds gc-time))
+	(write-char #\space)
+	(write (internal-time/ticks->seconds real-time))
+	(newline)))
+
+With analyzis:
+run-time:  31.82s
+gc-time:    0.2s (lol)
+real-time: 32.95s
+
+Without analyzis:
+run-time:  55.57s
+gc-time:    0.33s (lol)
+real-time: 57.34s
+
+
+So if we crudely assume that the time it takes
+for analyzis is the same in both cases (which
+isn't true, but works as a very rough estimate),
+then we have the following:
+
+32s = execution + A
+56s = execution + 25A
+
+A = 32s - execution
+
+56s = execution + 25*32s - 25*execution
+24execution = 800s - 56s
+24execution = 744s
+execution = 31s
+
+A = 32s - 31s = 1s
+
+So one analysis takes roughly one second,
+and the execution takes roughly 31 seconds.
+

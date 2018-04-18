@@ -1,0 +1,20 @@
+(define (unless condition usual-value exceptional-value)
+  (if condition exception-value usual-value))
+
+(define (factorial n)
+  (unless (= n 1)
+          (* n (factorial (- n 1)))
+		  1))
+
+In applicative-order scheme:
+The definition of factorial above would not work.
+The arguments would be attempted evaluated prior to the call
+to unless, and the argument's evaluation would depend on a call to unless,
+so instead the factorial would be called an infinite number of times (including for Ns less than 1.)
+
+
+In normal-order scheme:
+The above definition would work, since no work on evaluating the arguments
+would be done while calling unless. Instead it would be handed over to the if, which
+checks the condition and does the special-order form evaluation of only one consequent...
+Allowing the recursion to build up the desired answer.

@@ -306,8 +306,6 @@
 				   '<procedure-env>))
 	(display object)))
 
-(define the-global-environment (setup-environment))
-
 
 
 ;4.6
@@ -371,10 +369,3 @@
 
 
 
-
-
-
-
-
-
-(driver-loop)
