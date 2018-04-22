@@ -288,6 +288,9 @@
         (list 'integer? integer?)
         (list 'sqrt sqrt)
         (list 'eq? eq?)
+		(list 'display display)
+		(list 'newline newline)
+		(list 'equal? equal?)
 ;;      more primitives
         ))
 
