@@ -1,0 +1,10 @@
+Reasoners reasons wrongly: his solution leads to an infinite loop.
+
+First the parser tries (parse-word verbs). If that doesn't work
+out, it then tries (list 'verb-phrase (parse-verb-phrase) (parse-prepositional-phrase)).
+But the first part of parse-verb-phrase is trying (parse-word verbs), so this simply builds
+a recursive stack of attempts at parse-word with a growing number of a-waiting
+attempts at the propositional parsing.
+
+Same for if the order is reversed, since each (amb a0 a1)->a0 then will wait for 
+the completion of all a0's above in the stack.

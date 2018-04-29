@@ -1,0 +1,11 @@
+The parsing program wouldn't work if the amb evaluator didn't evaluate from left to right,
+because the parsing program uses the amb DFS to recurse down a parse tree of the language,
+and English is read from left to right. If the ambeval had evaluated from right to left,
+then the (suitably changed) parser could work for arabic or similar right-to-left languages.
+If the evaluator evaluated by random positions, then making a parser would be very troublesome
+indeed and would probably require saving slots and keeping track of current word by comparing
+with the original *unparsed* etc.
+
+And, as someone online helpfully points out... if (amb a0 a1) first evaluated for a1,
+then the maybe-extend loops would become infinite. I'm not sure how much of a problem that is,
+though, since those could simply be rearranged so that maybe-extend->a0, and simple-parsing->a1?

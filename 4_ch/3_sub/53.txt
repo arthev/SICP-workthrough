@@ -1,0 +1,5 @@
+The result of evaluating the expression is the set of pairs generated over prime-sum-pair
+with the given values, but in reverse order.
+
+Aka: ((8 35) (3 110) (3 20)).
+If we try try-again, we get the 'no more values left' message.
