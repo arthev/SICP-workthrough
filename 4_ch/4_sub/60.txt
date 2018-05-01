@@ -1,0 +1,15 @@
+The double listing, e.g.
+(lives-near (A) (B))
+(lives-near (B) (A))
+occurs because lives-near is a symmetric relation, and therefore when
+the query is carried out, it will find the pair A-B when searching with A as ?person-1,
+and then later the pair B-A when searching with B as ?person-1.
+
+It's possible to make all pairs list only once, e.g. by modifying the lives-near rule
+to impart a partial order based on, say, alphabetical ordering.
+e.g.
+(rule (lives-near ?person1 ?person2)
+	(and (address ?person1 (?town . ?rest1))
+		 (address ?person2 (?town . ?rest2))
+		 (not (same ?person1 ?person2))
+		 (lisp-value ALPHABETICAL-LESSER-THAN ?person1 ?person2)))
