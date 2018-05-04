@@ -1,0 +1,19 @@
+Suppose Ben wants to find the average salary of
+a company wheel.
+Then he might use e.g.:
+(average ?amount (and (wheel ?who)
+                      (salary ?who ?amount)))
+
+But as we have just seen, the wheel query can
+list the same person several times. This would
+screw up the calculation of the average.
+
+In general, Ben has realized that he will
+be accumulating non-unique frames.
+
+To fix this, he can feed the result
+stream through a function that creates
+a new stream of unique frames, analogous to
+distinct? as used in ch. 4.3, and then
+run the uniqueified stream through the
+accumulation function.

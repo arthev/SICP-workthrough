@@ -576,6 +576,7 @@
 
 ;; Do following to reinit the data base from microshaft-data-base
 ;;  in Scheme (not in the query driver loop)
+;; (initialize-data-base microshaft-data-base)
 
 (define microshaft-data-base
   '(
@@ -650,15 +651,3 @@
           (and (supervisor ?staff-person ?middle-manager)
                (outranked-by ?middle-manager ?boss))))
 ))
-
-
-
-
-;(initialize-data-base microshaft-data-base)
-(define last-pair-db
- '(
-(rule (last-pair (?z) (?z)))
-(rule (last-pair (?x . ?y) (?z))
-	  (last-pair ?y (?z)))
-))
-(initialize-data-base last-pair-db)
