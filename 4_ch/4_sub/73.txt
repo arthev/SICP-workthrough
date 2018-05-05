@@ -1,0 +1,5 @@
+Similar to 71 and 72: for marginally better handling of infinite streams,
+which are big and infinitely scary and likely to fuck up your programs.
+
+(Without the explicit delay-iness, we would be looking at forcing
+the entire stream during the call to interleave because of applicative-order evaluation.)

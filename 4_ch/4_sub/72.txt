@@ -1,0 +1,12 @@
+Analogously to exercise 4.71...
+There's the potential for infinite streams. 
+By interleaving instead of appending, we're guaranteed
+to receive the answer in full if one of the involved streams is finite
+while the other is infinite.
+
+E.g. stream-append works well if we can guarantee s1 is the finite and s2 is the infinite.
+stream-interleave doesn't care about the order there.
+
+Of course, infinite responses to the queries still presents their own problems.
+But at least with the interleaving, you get more useful output than waiting on the one
+infinite stream to finish -- even if both streams are infinite!
