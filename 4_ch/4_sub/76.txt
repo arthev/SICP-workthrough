@@ -1,0 +1,6 @@
+Not really an answer (I failed), but more of a note:
+We have seen earlier how changing the order of the sub-queries
+in an and impacts whether we receive an answer at all, or if
+an infinite loop gets triggered, asf. I suspect that
+recursive definitions will suffer quite a bit with the
+'parallel' search as per this exercise.
