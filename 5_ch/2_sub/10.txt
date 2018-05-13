@@ -1,0 +1,12 @@
+Probably.
+
+I'll implement an instruction to decrement a register. That is, instead of having to write:
+(assign R (op -) (reg R) (const 1))
+
+I want to be able to simply use:
+(dec R)
+
+Plan: Add to dispatch, and then add some
+functions to handle the implementation.
+Hmm. Doesn't seem I'll have to modify
+much except the actual dispatch...

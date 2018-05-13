@@ -1,0 +1,6 @@
+Without explicit handling of multiple definitions of the same label (i.e. error handling),
+the content of the a register is 3 after execution of the simulation.
+
+(Because when the simulator searches through for a 'here' label, it will
+find the first textmost instance due to recursive build-up from bottom to top
+in the extract-labels procedure.)
