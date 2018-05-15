@@ -15,9 +15,6 @@
 
 (define (make-machine register-names ops controller-text)
   (let ((machine (make-new-machine)))
-    (for-each (lambda (register-name)
-                ((machine 'allocate-register) register-name))
-              register-names)
     ((machine 'install-operations) ops)    
     ((machine 'install-instruction-sequence)
      (assemble controller-text machine))
@@ -125,7 +122,7 @@
            (list (list 'pc pc) (list 'flag flag))))
       (define (allocate-register name)
         (if (assoc name register-table)
-            (error "Multiply defined register: " name)
+			'register-already-allocated
             (set! register-table
                   (cons (list name (make-register name))
                         register-table)))
@@ -168,6 +165,16 @@
 			   (lambda (new) (set! reg-sources new)))
               (else (error "Unknown request -- MACHINE" message))))
       dispatch)))
+
+(define (potentially-allocate-regs inst machine)
+  (let ((inst-type (car inst))
+		(alloc-r (machine 'allocate-register)))
+	(if (member inst-type (list 'assign 'save 'restore))
+	  (alloc-r (cadr inst)))
+	(for-each alloc-r
+			  (map cadr
+				   (filter (lambda (s) (and (pair? s) (equal? (car s) 'reg)))
+						   inst)))))
 
 (define supported-insts '(assign dec test branch goto save restore perform))
 
@@ -274,6 +281,9 @@
 				;;do the datapath analysis for exercise 5.12. 
 				;;In its own function, of course.
 				(analyze-data-path next-inst machine)
+				;;Also, for exercise 5.13: Let's scan for registers that need allocatin'.
+				(potentially-allocate-regs next-inst machine)
+				;;And back to the standard assemblering:
 				(receive (cons (make-instruction next-inst)
 							   insts)
 						 labels)))))

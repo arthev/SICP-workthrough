@@ -155,17 +155,9 @@
               ((eq? message 'stack) stack)
               ((eq? message 'operations) the-ops)
 			  ((eq? message 'get-all-instructions) all-instructions)
-			  ((eq? message 'set-all-instructions) 
-			   (lambda (new) (set! all-instructions new)))
 			  ((eq? message 'get-entry-regs) entry-regs)
-			  ((eq? message 'set-entry-regs)
-			   (lambda (new) (set! entry-regs new)))
 			  ((eq? message 'get-stack-users) stack-users)
-			  ((eq? message 'set-stack-users)
-			   (lambda (new) (set! stack-users new)))
 			  ((eq? message 'get-reg-sources) reg-sources)
-			  ((eq? message 'set-reg-sources)
-			   (lambda (new) (set! reg-sources new)))
               (else (error "Unknown request -- MACHINE" message))))
       dispatch)))
 
@@ -177,11 +169,7 @@
 		(entry-regs (machine 'get-entry-regs))
 		(stack-users (machine 'get-stack-users))
 		(reg-sources (machine 'get-reg-sources))
-		(inst-type (car inst))
-		(set-all-insts (machine 'set-all-instructions))
-		(set-entry-regs (machine 'set-entry-regs))
-		(set-stack-users (machine 'set-stack-users))
-		(set-reg-sources (machine 'set-reg-sources)))
+		(inst-type (car inst)))
 	;;First, let's add the inst to the all-insts.
 	(define (add-to-all-insts)
 	  (newline) (display "In add-to-all-insts")
@@ -189,7 +177,7 @@
 		(set! all-insts (cons (list inst-type '()) all-insts)))
 	  (let ((rel-list (cadr (assoc inst-type all-insts))))
 		(if (not (member inst rel-list))
-			(set-car! (cdr (assoc inst-type all-insts)) (cons (cdr inst) rel-list))))
+		  (set! rel-list (cons (cdr inst) rel-list))))
 	  'ok)
 	;;Next, let's add the registers used to hold entry points.
 	(define (add-to-entry-regs)
@@ -217,17 +205,12 @@
 		  (let ((r-list (cadr (assoc r reg-sources)))
 				(source (cddr inst)))
 			(if (not (member source r-list))
-			  (set-car! (cdr (assoc r reg-sources)) (cons source r-list)))))))
+			  (set! r-list (cons source r-list)))))))
 	;;And we just invoke...
 	(add-to-all-insts)
 	(add-to-entry-regs)
 	(add-to-stack-users)
-	(add-to-reg-sources)
-	;;And then we just set the real ones...
-	(set-all-insts all-insts)
-	(set-entry-regs entry-regs)
-	(set-stack-users stack-users)
-	(set-reg-sources reg-sources)))
+	(add-to-reg-sources)))
 
 
 
