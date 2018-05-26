@@ -11,24 +11,33 @@
 ;;;  one you want last, or by commenting one of them out.
 ;;; Also, comment in/out the print-stack-statistics op in make-new-machine
 ;;; To find this stack code below, look for comments with **
+(define (print arg)
+  (newline) (display "PRINT:") (display arg))
 
 
 (define (make-machine register-names ops controller-text)
   (let ((machine (make-new-machine)))
-    ;;(for-each (lambda (register-name)
-    ;;            ((machine 'allocate-register) register-name))
-    ;;          register-names)
+    (for-each (lambda (register-name)
+                ((machine 'allocate-register) register-name))
+              register-names)
     ((machine 'install-operations) ops)    
     ((machine 'install-instruction-sequence)
      (assemble controller-text machine))
     machine))
 
 (define (make-register name)
-  (let ((contents '*unassigned*))
+  (let ((contents '*unassigned*)
+		(tracing? #t))
     (define (dispatch message)
       (cond ((eq? message 'get) contents)
             ((eq? message 'set)
-             (lambda (value) (set! contents value)))
+             (lambda (value)
+			   (if tracing? 
+				 (begin (newline) (display "REGTRACE ") (display name) 
+						(display ": ") (display contents) (display " -> ") (display value)))
+			   (set! contents value)))
+			((eq? message 'trace-on) (set! tracing? #t))
+			((eq? message 'trace-off) (set! tracing? #f))
             (else
              (error "Unknown request -- REGISTER" message))))
     dispatch))
@@ -39,27 +48,11 @@
 (define (set-contents! register value)
   ((register 'set) value))
 
-;;**original (unmonitored) version from section 5.2.1
-(define (make-stack)
-  (let ((s '()))
-    (define (push x)
-      (set! s (cons x s)))
-    (define (pop)
-      (if (null? s)
-          (error "Empty stack -- POP")
-          (let ((top (car s)))
-            (set! s (cdr s))
-            top)))
-    (define (initialize)
-      (set! s '())
-      'done)
-    (define (dispatch message)
-      (cond ((eq? message 'push) push)
-            ((eq? message 'pop) (pop))
-            ((eq? message 'initialize) (initialize))
-            (else (error "Unknown request -- STACK"
-                         message))))
-    dispatch))
+(define (trace-off tracer)
+  (tracer 'trace-off))
+
+(define (trace-on tracer)
+  (tracer 'trace-on))
 
 (define (pop stack)
   (stack 'pop))
@@ -113,11 +106,13 @@
 		(all-instructions '())
 		(entry-regs '())
 		(stack-users '())
-		(reg-sources '()))
+		(reg-sources '())
+		(instruction-count 0)
+		(tracing? #t))
     (let ((the-ops
            (list (list 'initialize-stack
                        (lambda () (stack 'initialize)))
-                 ;;**next for monitored stack (as in section 5.2.4)
+                 ;**next for monitored stack (as in section 5.2.4)
                  ;;  -- comment out if not wanted
                  (list 'print-stack-statistics
                        (lambda () (stack 'print-statistics)))))
@@ -125,8 +120,7 @@
            (list (list 'pc pc) (list 'flag flag))))
       (define (allocate-register name)
         (if (assoc name register-table)
-            ;;(error "Multiply defined register: " name)
-			'register-already-allocated
+            (error "Multiply defined register: " name)
             (set! register-table
                   (cons (list name (make-register name))
                         register-table)))
@@ -138,11 +132,18 @@
               (error "Unknown register:" name))))
       (define (execute)
         (let ((insts (get-contents pc)))
-          (if (null? insts)
-              'done
-              (begin
-                ((instruction-execution-proc (car insts)))
-                (execute)))))
+		  (cond ((null? insts) 'done)
+				((symbol? (car insts)) 
+				   (if tracing?
+					 (print (car insts)))
+				   (advance-pc pc)
+				   (execute))
+				(else
+				  (set! instruction-count (1+ instruction-count))
+				  (if tracing?
+					(print (instruction-text (car insts))))
+				  ((instruction-execution-proc (car insts)))
+				  (execute)))))
       (define (dispatch message)
         (cond ((eq? message 'start)
                (set-contents! pc the-instruction-sequence)
@@ -167,23 +168,28 @@
 			  ((eq? message 'get-reg-sources) reg-sources)
 			  ((eq? message 'set-reg-sources)
 			   (lambda (new) (set! reg-sources new)))
+			  ((eq? message 'reset-instruction-count)
+			   (begin 
+				 (newline) (display "Instruction count:") (display instruction-count) 
+				 (set! instruction-count 0)))
+			  ((eq? message 'trace-on) (set! tracing? #t))
+			  ((eq? message 'trace-off) (set! tracing? #f))
+			  ((eq? message 'regtrace-on) 
+			   (lambda (reg) (trace-on (lookup-register reg))))
+			  ((eq? message 'regtrace-off)
+			   (lambda (reg) (trace-off (lookup-register reg))))
               (else (error "Unknown request -- MACHINE" message))))
       dispatch)))
 
-(define (potentially-allocate-regs inst machine)
-  (let ((inst-type (car inst))
-		(alloc-r (machine 'allocate-register)))
-	(if (member inst-type (list 'assign 'save 'restore))
-	  (alloc-r (cadr inst)))
-	(for-each alloc-r
-			  (map cadr
-				   (filter (lambda (s) (and (pair? s) (equal? (car s) 'reg)))
-						   inst)))))
+(define (regtrace-on machine reg)
+  ((machine 'regtrace-on) reg))
+(define (regtrace-off machine reg)
+  ((machine 'regtrace-off) reg))
 
 (define supported-insts '(assign dec test branch goto save restore perform))
 
 (define (analyze-data-path inst machine)
-  (newline) (display inst)
+  ;;;(newline) (display inst)
   (let ((all-insts (machine 'get-all-instructions))
 		(entry-regs (machine 'get-entry-regs))
 		(stack-users (machine 'get-stack-users))
@@ -195,7 +201,7 @@
 		(set-reg-sources (machine 'set-reg-sources)))
 	;;First, let's add the inst to the all-insts.
 	(define (add-to-all-insts)
-	  (newline) (display "In add-to-all-insts")
+	  ;;;(newline) (display "In add-to-all-insts")
 	  (if (not (assoc inst-type all-insts))
 		(set! all-insts (cons (list inst-type '()) all-insts)))
 	  (let ((rel-list (cadr (assoc inst-type all-insts))))
@@ -204,7 +210,7 @@
 	  'ok)
 	;;Next, let's add the registers used to hold entry points.
 	(define (add-to-entry-regs)
-	  (newline) (display "In add-to-entry-regs")
+	  ;;;(newline) (display "In add-to-entry-regs")
 	  (if (equal? inst-type 'goto)
 		(if (equal? (caadr inst) 'reg)
 		  (if (not (member (cadadr inst) entry-regs))
@@ -212,7 +218,7 @@
 	  'ok)
 	;;Next, let's add the registers that use the stack.
 	(define (add-to-stack-users)
-	  (newline) (display "In add-to-entry-regs")
+	  ;;;(newline) (display "In add-to-entry-regs")
 	  (if (or (equal? inst-type 'save)
 			  (equal? inst-type 'restore))
 		(if (not (member (cadr inst) stack-users))
@@ -220,7 +226,7 @@
 	  'ok)
 	;;And finally, the list of reg-sources.
 	(define (add-to-reg-sources)
-	  (newline) (display "In add-to-entry-regs")
+	 ;;;(newline) (display "In add-to-entry-regs")
 	  (if (equal? inst-type 'assign)
 		(let ((r (cadr inst)))
 		  (if (not (assoc r reg-sources))
@@ -276,18 +282,16 @@
             (if (symbol? next-inst)
 			  (if (memq next-inst (map car labels))
 				  (error "Label occurs more than once -- EXTRACT-LABELS:" next-inst)
-                  (receive insts
-						   (cons (make-label-entry next-inst 
-												   insts)
-								 labels)))
+				  (let ((linsts (cons next-inst insts)))
+					(receive linsts
+							 (cons (make-label-entry next-inst
+													 linsts)
+								   labels))))
 			  (begin 
 				;;Not a label - therefore an instruction - therefore time to
 				;;do the datapath analysis for exercise 5.12. 
 				;;In its own function, of course.
 				(analyze-data-path next-inst machine)
-				;;Also, for exercise 5.13: Let's scan for registers that need allocatin'.
-				(potentially-allocate-regs next-inst machine)
-				;;And back to the standard assemblering:
 				(receive (cons (make-instruction next-inst)
 							   insts)
 						 labels)))))
@@ -311,13 +315,17 @@
   (cons text '()))
 
 (define (instruction-text inst)
-  (car inst))
+  (if (symbol? inst)
+	inst
+	(car inst)))
+
 
 (define (instruction-execution-proc inst)
   (cdr inst))
 
 (define (set-instruction-execution-proc! inst proc)
-  (set-cdr! inst proc))
+  (if (not (symbol? inst))
+	(set-cdr! inst proc)))
 
 (define (make-label-entry label-name insts)
   (cons label-name insts))
@@ -331,7 +339,8 @@
 
 (define (make-execution-procedure inst labels machine
                                   pc flag stack ops)
-  (cond ((eq? (car inst) 'assign)
+  (cond ((symbol? inst) '())
+		((eq? (car inst) 'assign)
          (make-assign inst machine labels ops pc))
 		((eq? (car inst) 'dec)
 		 (make-dec inst machine pc))

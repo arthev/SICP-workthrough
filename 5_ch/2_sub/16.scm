@@ -26,18 +26,11 @@
     machine))
 
 (define (make-register name)
-  (let ((contents '*unassigned*)
-		(tracing? #t))
+  (let ((contents '*unassigned*))
     (define (dispatch message)
       (cond ((eq? message 'get) contents)
             ((eq? message 'set)
-             (lambda (value)
-			   (if tracing? 
-				 (begin (newline) (display "REGTRACE ") (display name) 
-						(display ": ") (display contents) (display " -> ") (display value)))
-			   (set! contents value)))
-			((eq? message 'trace-on) (set! tracing? #t))
-			((eq? message 'trace-off) (set! tracing? #f))
+             (lambda (value) (set! contents value)))
             (else
              (error "Unknown request -- REGISTER" message))))
     dispatch))
@@ -47,12 +40,6 @@
 
 (define (set-contents! register value)
   ((register 'set) value))
-
-(define (trace-off tracer)
-  (tracer 'trace-off))
-
-(define (trace-on tracer)
-  (tracer 'trace-on))
 
 (define (pop stack)
   (stack 'pop))
@@ -132,18 +119,14 @@
               (error "Unknown register:" name))))
       (define (execute)
         (let ((insts (get-contents pc)))
-		  (cond ((null? insts) 'done)
-				((symbol? (car insts)) 
-				   (if tracing?
-					 (print (car insts)))
-				   (advance-pc pc)
-				   (execute))
-				(else
-				  (set! instruction-count (1+ instruction-count))
-				  (if tracing?
-					(print (instruction-text (car insts))))
-				  ((instruction-execution-proc (car insts)))
-				  (execute)))))
+          (if (null? insts)
+              'done
+              (begin
+				(set! instruction-count (1+ instruction-count))
+				(if tracing? 
+				  (print (instruction-text (car insts))))
+                ((instruction-execution-proc (car insts)))
+                (execute)))))
       (define (dispatch message)
         (cond ((eq? message 'start)
                (set-contents! pc the-instruction-sequence)
@@ -174,22 +157,13 @@
 				 (set! instruction-count 0)))
 			  ((eq? message 'trace-on) (set! tracing? #t))
 			  ((eq? message 'trace-off) (set! tracing? #f))
-			  ((eq? message 'regtrace-on) 
-			   (lambda (reg) (trace-on (lookup-register reg))))
-			  ((eq? message 'regtrace-off)
-			   (lambda (reg) (trace-off (lookup-register reg))))
               (else (error "Unknown request -- MACHINE" message))))
       dispatch)))
-
-(define (regtrace-on machine reg)
-  ((machine 'regtrace-on) reg))
-(define (regtrace-off machine reg)
-  ((machine 'regtrace-off) reg))
 
 (define supported-insts '(assign dec test branch goto save restore perform))
 
 (define (analyze-data-path inst machine)
-  ;;;(newline) (display inst)
+  (newline) (display inst)
   (let ((all-insts (machine 'get-all-instructions))
 		(entry-regs (machine 'get-entry-regs))
 		(stack-users (machine 'get-stack-users))
@@ -201,7 +175,7 @@
 		(set-reg-sources (machine 'set-reg-sources)))
 	;;First, let's add the inst to the all-insts.
 	(define (add-to-all-insts)
-	  ;;;(newline) (display "In add-to-all-insts")
+	  (newline) (display "In add-to-all-insts")
 	  (if (not (assoc inst-type all-insts))
 		(set! all-insts (cons (list inst-type '()) all-insts)))
 	  (let ((rel-list (cadr (assoc inst-type all-insts))))
@@ -210,7 +184,7 @@
 	  'ok)
 	;;Next, let's add the registers used to hold entry points.
 	(define (add-to-entry-regs)
-	  ;;;(newline) (display "In add-to-entry-regs")
+	  (newline) (display "In add-to-entry-regs")
 	  (if (equal? inst-type 'goto)
 		(if (equal? (caadr inst) 'reg)
 		  (if (not (member (cadadr inst) entry-regs))
@@ -218,7 +192,7 @@
 	  'ok)
 	;;Next, let's add the registers that use the stack.
 	(define (add-to-stack-users)
-	  ;;;(newline) (display "In add-to-entry-regs")
+	  (newline) (display "In add-to-entry-regs")
 	  (if (or (equal? inst-type 'save)
 			  (equal? inst-type 'restore))
 		(if (not (member (cadr inst) stack-users))
@@ -226,7 +200,7 @@
 	  'ok)
 	;;And finally, the list of reg-sources.
 	(define (add-to-reg-sources)
-	 ;;;(newline) (display "In add-to-entry-regs")
+	  (newline) (display "In add-to-entry-regs")
 	  (if (equal? inst-type 'assign)
 		(let ((r (cadr inst)))
 		  (if (not (assoc r reg-sources))
@@ -282,11 +256,10 @@
             (if (symbol? next-inst)
 			  (if (memq next-inst (map car labels))
 				  (error "Label occurs more than once -- EXTRACT-LABELS:" next-inst)
-				  (let ((linsts (cons next-inst insts)))
-					(receive linsts
-							 (cons (make-label-entry next-inst
-													 linsts)
-								   labels))))
+                  (receive insts
+						   (cons (make-label-entry next-inst 
+												   insts)
+								 labels)))
 			  (begin 
 				;;Not a label - therefore an instruction - therefore time to
 				;;do the datapath analysis for exercise 5.12. 
@@ -315,17 +288,13 @@
   (cons text '()))
 
 (define (instruction-text inst)
-  (if (symbol? inst)
-	inst
-	(car inst)))
-
+  (car inst))
 
 (define (instruction-execution-proc inst)
   (cdr inst))
 
 (define (set-instruction-execution-proc! inst proc)
-  (if (not (symbol? inst))
-	(set-cdr! inst proc)))
+  (set-cdr! inst proc))
 
 (define (make-label-entry label-name insts)
   (cons label-name insts))
@@ -339,8 +308,7 @@
 
 (define (make-execution-procedure inst labels machine
                                   pc flag stack ops)
-  (cond ((symbol? inst) '())
-		((eq? (car inst) 'assign)
+  (cond ((eq? (car inst) 'assign)
          (make-assign inst machine labels ops pc))
 		((eq? (car inst) 'dec)
 		 (make-dec inst machine pc))

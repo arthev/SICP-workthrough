@@ -27,7 +27,7 @@
 
 (define (make-register name)
   (let ((contents '*unassigned*)
-		(tracing? #t))
+		(tracing? #f))
     (define (dispatch message)
       (cond ((eq? message 'get) contents)
             ((eq? message 'set)
@@ -117,7 +117,8 @@
                  (list 'print-stack-statistics
                        (lambda () (stack 'print-statistics)))))
           (register-table
-           (list (list 'pc pc) (list 'flag flag))))
+           (list (list 'pc pc) (list 'flag flag)))
+		  (breakpoints '()))
       (define (allocate-register name)
         (if (assoc name register-table)
             (error "Multiply defined register: " name)
@@ -134,20 +135,69 @@
         (let ((insts (get-contents pc)))
 		  (cond ((null? insts) 'done)
 				((symbol? (car insts)) 
+				 (let ((label (car insts)))
 				   (if tracing?
-					 (print (car insts)))
+					 (print label))
+
+				   (for-each
+					 (lambda (br)
+					   (reset-breakpoint br)
+					   (activate-breakpoint br))
+					 (filter
+					   (lambda (br) (equal? (breakpoint-label br) label))
+					   breakpoints))
+
 				   (advance-pc pc)
-				   (execute))
+				   (execute)))
 				(else
 				  (set! instruction-count (1+ instruction-count))
+				  
 				  (if tracing?
 					(print (instruction-text (car insts))))
-				  ((instruction-execution-proc (car insts)))
-				  (execute)))))
+				  
+				  (let* ((break-flag? #f)
+						 (active-brs (filter breakpoint-active? breakpoints)))
+					(for-each (lambda (br) (set-car! (cddr br) (1+ (breakpoint-c br))))
+							  active-brs)
+					(for-each
+					  (lambda (br)
+						(newline)(display "BREAKPOINT: ")(display (breakpoint-label br))
+						(display " - ")(display (breakpoint-n br))
+						(set! break-flag? #t)
+						(reset-breakpoint br))
+					  (filter (lambda (br) (eq? (breakpoint-n br) (breakpoint-c br)))
+							  active-brs))
+					
+					(if break-flag?
+					  (begin
+						(print "BREAK FLAG TRUARU")
+						'paused)
+					  (begin
+						((instruction-execution-proc (car insts)))
+						(execute))))))))
+	  (define (cancel-breakpoint label n)
+		(define (looper brs)
+		  (cond ((null? brs) 
+				 '())
+				((and (eq? label (breakpoint-label (car brs)))
+					  (eq? n (breakpoint-n (car brs))))
+				 (looper (cdr brs)))
+				(else
+				  (cons (car brs) (looper (cdr brs))))))
+		(set! breakpoints (looper breakpoints)))
       (define (dispatch message)
         (cond ((eq? message 'start)
                (set-contents! pc the-instruction-sequence)
                (execute))
+			  ((eq? message 'proceed) (execute))
+			  ((eq? message 'set-breakpoint)
+			   (lambda (label n)
+				 (set! breakpoints (cons (make-breakpoint label n)
+										 breakpoints))))
+			  ((eq? message 'cancel-all-breakpoints)
+			   (set! breakpoints '()))
+			  ((eq? message 'cancel-breakpoint) cancel-breakpoint)
+			  ((eq? message 'get-breakpoints) breakpoints)
               ((eq? message 'install-instruction-sequence)
                (lambda (seq) (set! the-instruction-sequence seq)))
               ((eq? message 'allocate-register) allocate-register)
@@ -180,6 +230,41 @@
 			   (lambda (reg) (trace-off (lookup-register reg))))
               (else (error "Unknown request -- MACHINE" message))))
       dispatch)))
+
+(define (proceed-machine machine)
+  (machine 'proceed))
+
+(define (cancel-breakpoint machine label n)
+  ((machine 'cancel-breakpoint) label n))
+
+(define (cancel-all-breakpoints machine)
+  (machine 'cancel-all-breakpoints))
+
+(define (set-breakpoint machine label n)
+  ((machine 'set-breakpoint) label n))
+
+(define (get-breakpoints machine)
+  (machine 'get-breakpoints))
+
+(define (make-breakpoint label n)
+  (list label n 0 #f))
+
+(define (activate-breakpoint br)
+  (set-car! (cdddr br) #t))
+
+(define (reset-breakpoint br)
+  (set-car! (cdddr br) #f)
+  (set-car! (cddr br) 0))
+
+(define (breakpoint-label br)
+  (car br))
+(define (breakpoint-n br)
+  (cadr br))
+(define (breakpoint-c br)
+  (caddr br))
+(define (breakpoint-active? br)
+  (cadddr br))
+
 
 (define (regtrace-on machine reg)
   ((machine 'regtrace-on) reg))
@@ -412,6 +497,7 @@
         (error "Bad TEST instruction -- ASSEMBLE" inst))))
 
 (define (test-condition test-instruction)
+  (newline) (display "TEST-CON")
   (cdr test-instruction))
 
 
@@ -477,7 +563,9 @@
             (advance-pc pc)))
         (error "Bad PERFORM instruction -- ASSEMBLE" inst))))
 
-(define (perform-action inst) (cdr inst))
+(define (perform-action inst) 
+  (newline) (display "PROFOM_ACT")
+  (cdr inst))
 
 (define (make-primitive-exp exp machine labels)
   (cond ((constant-exp? exp)

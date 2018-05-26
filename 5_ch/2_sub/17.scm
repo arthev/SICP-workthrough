@@ -26,18 +26,11 @@
     machine))
 
 (define (make-register name)
-  (let ((contents '*unassigned*)
-		(tracing? #t))
+  (let ((contents '*unassigned*))
     (define (dispatch message)
       (cond ((eq? message 'get) contents)
             ((eq? message 'set)
-             (lambda (value)
-			   (if tracing? 
-				 (begin (newline) (display "REGTRACE ") (display name) 
-						(display ": ") (display contents) (display " -> ") (display value)))
-			   (set! contents value)))
-			((eq? message 'trace-on) (set! tracing? #t))
-			((eq? message 'trace-off) (set! tracing? #f))
+             (lambda (value) (set! contents value)))
             (else
              (error "Unknown request -- REGISTER" message))))
     dispatch))
@@ -47,12 +40,6 @@
 
 (define (set-contents! register value)
   ((register 'set) value))
-
-(define (trace-off tracer)
-  (tracer 'trace-off))
-
-(define (trace-on tracer)
-  (tracer 'trace-on))
 
 (define (pop stack)
   (stack 'pop))
@@ -174,17 +161,8 @@
 				 (set! instruction-count 0)))
 			  ((eq? message 'trace-on) (set! tracing? #t))
 			  ((eq? message 'trace-off) (set! tracing? #f))
-			  ((eq? message 'regtrace-on) 
-			   (lambda (reg) (trace-on (lookup-register reg))))
-			  ((eq? message 'regtrace-off)
-			   (lambda (reg) (trace-off (lookup-register reg))))
               (else (error "Unknown request -- MACHINE" message))))
       dispatch)))
-
-(define (regtrace-on machine reg)
-  ((machine 'regtrace-on) reg))
-(define (regtrace-off machine reg)
-  ((machine 'regtrace-off) reg))
 
 (define supported-insts '(assign dec test branch goto save restore perform))
 
