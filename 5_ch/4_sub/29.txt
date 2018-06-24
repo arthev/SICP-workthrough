@@ -1,0 +1,41 @@
+a)
+Let's investigate the maximum depth of the
+stack required to compute Fib(n) for n >= 2.
+
+n -> md
+2 -> 19
+3 -> 27
+4 -> 35
+5 -> 43
+6 -> 51
+7 -> 59
+
+We see by inspection that the difference
+between max-depth for consecutive ns is 8.
+We conjecture:
+md(Fib(n)) = 8n + 3
+
+Test:
+md(Fib(15)) = 123
+
+(fib 15)
+(total-pushes = 59178 maximum-depth = 123)
+
+b)
+Let's investigate the number of pushes.
+
+n -> tp
+2 -> 78
+3 -> 138
+4 -> 258
+5 -> 438
+6 -> 738
+7 -> 1218
+8 -> 1998
+
+tp(Fib(n)) = tp(Fib(n-1)) + tp(Fib(n-2)) + 42
+
+
+
+
+

@@ -1,0 +1,16 @@
+(f 'x 'y)
+All the saves and restores are superfluous, since this can be applied directly.
+
+((f) 'x 'y)
+All are superfluous:
+No need to save and restore env around (f) because 'x and 'y are self-evaluating.
+
+(f (g 'x) y)
+Operator doesn't need evaluating.
+But both of the operands do.
+So only the save and restore of env around f is superfluous.
+
+(f (g 'x) 'y)
+No need to save and restore env because f and 'y are self-evaluating,
+which means the interpretation can't change based on what (g 'x) does.
+

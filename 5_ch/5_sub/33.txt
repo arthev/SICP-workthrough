@@ -1,0 +1,11 @@
+factorial-alt has a line for save and restore env respectively, within
+the 'false branch' stuff. Apart from that, and the re-ordering
+of whether to handle n or the factorial call first, the code looks pretty similar.
+
+Given this, I think the first version, factorial, is marginally
+more efficient than factorial-alt, since the latter also does the env saves and restores.
+
+
+[Checked online, and someone pointed out that the first version, factorial,
+saves and restores argl, which factorial-alt doesn't do. Therefore, there is no difference
+in efficiency, only a difference in order of operations and which register to save and restore.]

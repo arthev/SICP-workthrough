@@ -1,0 +1,25 @@
+Alyssa is wrong: interpretation can't optimize to the same degree
+as a compiler because the interpreter has to be ready for any program,
+whereas the compiler only has to optimize one specific program.
+
+Clearly the latter scenario has fewer constraints.
+(In particular: an interpreter *must* parse code whenever it runs,
+whereas a compiler can parse once.)
+
+Furthermore, optimization is not necessarily good:
+optimizations, especially by special case handling,
+comes with a significant complexity cost. Depending
+on the purposes of the interpreter (exploring language possibilities,
+powerful meta-capabilities, debugging aid, etc), the
+added complexity may not align with overall goals.
+
+That is to say, optimization always optimizes *for* something,
+and 'fewest lines of code' or 'highest speed' are not the
+only possible options.
+
+
+
+[Also: Found online when comparing answers:
+The special case handling itself requires resources,
+so the more special cases to handle, the more 
+special case handling overhead gets introduced.]

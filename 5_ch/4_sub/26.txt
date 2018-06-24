@@ -1,0 +1,47 @@
+;;; EC-Eval input:
+(define (factorial n) 
+(define (iter product counter)
+(if (> counter n)
+product
+(iter (* counter product) (+ counter 1))))
+(iter 1 1))
+
+(total-pushes = 3 maximum-depth = 3)
+;;; EC-Eval value:
+ok
+
+
+(factorial 10)
+(total-pushes = 379 maximum-depth = 10)
+3628800
+
+(factorial 20)
+(total-pushes = 729 maximum-depth = 10)
+2432902008176640000
+
+(factorial 1)
+(total-pushes = 64 maximum-depth = 10)
+1
+
+(factorial 30)
+(total-pushes = 1079 maximum-depth = 10)
+265252859812191058636308480000000
+
+a)
+Obviously the max-depth is 10.
+
+b)
+n -> tp
+1 -> 64
+2 -> 99
+3 -> 134
+4 -> 169
+
+Observe that the difference between the
+tps is 35 for each increase of 1 in n.
+Therefore, let's conjecture:
+35n + 29
+
+Then we ought to get
+11 -> 414, which we do.
+

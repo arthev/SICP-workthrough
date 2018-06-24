@@ -1,0 +1,28 @@
+n ->  tp :  md
+1 ->  16 :  08
+2 ->  48 :  13
+3 ->  80 :  18
+4 -> 112 :  23
+5 -> 144 :  28
+
+Let's look at total-pushes first:
+We see a diff of 32 per increase in n.
+Therefore, we conjecture that
+tp(n) = 32(n-1) + 16
+tp(n) = 32n - 16
+
+Let's look at max-depth:
+We see an increase of 5 per increase in n.
+Therefore, we conjecture that
+md(n) = 5n + 3
+
+Then, we would expect
+tp(15) = 464
+md(15) =  78
+
+
+(factorial 15)
+(total-pushes = 464 maximum-depth = 78)
+;;; EC-Eval value:
+1307674368000
+

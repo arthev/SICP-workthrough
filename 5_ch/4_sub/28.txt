@@ -1,0 +1,43 @@
+Let's first look at the factorial procedure
+which generates recursive processes even if
+evaluated in a tail-optimized manner.
+
+n -> md
+1 -> 11
+2 -> 19
+3 -> 27
+4 -> 35
+5 -> 43
+
+This obviously correlates to
+md(n) = 8n + 3
+
+Test:
+md(15) = 123
+
+(factorial 15)
+(total-pushes = 494 maximum-depth = 123)
+
+Thus, wee see Θ(n) space complexity.
+
+Now, let's look at the procedure
+which generated an iterative process during
+exercise 5.26:
+
+n -> md
+1 -> 17
+2 -> 20
+3 -> 23
+4 -> 26
+5 -> 29
+
+md(n) = 3n + 14
+
+Test:
+md(20) = 74
+
+(factorial 20)
+(total-pushes = 773 maximum-depth = 74)
+
+Thus, we see Θ(n) space complexity here too. 
+
