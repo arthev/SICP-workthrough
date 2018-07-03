@@ -1,10 +1,17 @@
-(load "12.scm")
+(load "14.scm")
+
+(define (print arg)
+  (newline) (display "PRNT:") (display arg) (newline))
 
 (define FIB
   (make-machine
 	'(continue n val)
-	(list (list '+ +) (list '< <) (list '- -))
-	'(  (assign continue (label fib-done))
+	(list (list '+ +) (list '< <) (list '- -)
+		  (list 'print print) (list 'read read))
+	'(fib-func
+	    (perform (op initialize-stack))
+		(assign n (op read))
+		(assign continue (label fib-done))
 	  fib-loop
 	    (test (op <) (reg n) (const 2))
 		(branch (label immediate-answer))
@@ -30,9 +37,12 @@
 	  immediate-answer
 	    (assign val (reg n))
 		(goto (reg continue))
-	  fib-done)))
-
-(FIB 'get-all-instructions)
-(FIB 'get-entry-regs)
-(FIB 'get-stack-users)
-(FIB 'get-reg-sources)
+	  fib-done
+	    (perform (op print) (reg val))
+		(perform (op print-stack-statistics))
+		(goto (label fib-func)))))
+				 
+;(FIB 'get-all-instructions)
+;(FIB 'get-entry-regs)
+;(FIB 'get-stack-users)
+;(FIB 'get-reg-sources)

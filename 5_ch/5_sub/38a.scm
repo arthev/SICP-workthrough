@@ -34,6 +34,7 @@
                            target
                            linkage))
         ((cond? exp) (compile (cond->if exp) target linkage))
+		((open-coded? exp) (compile-open-code exp target linkage))
         ((application? exp)
          (compile-application exp target linkage))
         (else
@@ -345,6 +346,8 @@
                     (list-difference (cdr s1) s2)))))
 
 (define (preserving regs seq1 seq2)
+;  (newline) (display "PREPRE")
+;  (newline) (display regs) (display ":") (display seq1) (display ":") (display seq2)
   (if (null? regs)
       (append-instruction-sequences seq1 seq2)
       (let ((first-reg (car regs)))
@@ -375,5 +378,47 @@
    (list-union (registers-modified seq1)
                (registers-modified seq2))
    (append (statements seq1) (statements seq2))))
+
+;;Exercise 5.38
+;((open-coded? exp) (compile-open-code exp target linkage))
+
+;a
+(define (spread-arguments operands)
+  (let ((c1 (compile (car operands) 'arg1 'next))
+		(c2 (compile (cadr operands)'arg2 'next)))
+	(list c1 c2)))
+
+
+(define (open-coded? exp)
+;  (newline) (display "heyho")
+  (if (pair? exp)
+	(memq (car exp) '(= * - +))
+	#f))
+
+(define (compile-open-code exp target linkage)
+;  (newline) (display "leilo")
+  (if (= (length exp) 3)
+	(let ((op (car exp))
+		  (args (spread-arguments (cdr exp))))
+	  (end-with-linkage 
+		linkage
+		(preserving
+		  '(env continue)
+		  (car args)
+		  (preserving 
+			'(env continue arg1)
+			(cadr args)
+			(make-instruction-sequence '(arg1 arg2) (list target)
+									   `((assign ,target (op ,op) (reg arg1) (reg arg2))))))))
+	(error "COMPILE_OPEN_CODE expected an exp of length 3")))
+
+
+
+
+
+
+
+
+
 
 '(COMPILER LOADED)

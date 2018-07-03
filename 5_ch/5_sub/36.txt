@@ -1,0 +1,14 @@
+The order is right-to-left.
+The order of evaluation enters
+in that construct-arglist reverses the operand-codes list.
+
+To evaluate in left-to-right order, remove the reversal there.
+To make the order of arguments in argl stay intact so other code works as expected,
+reintroduce the reversal in some fashion.
+
+Either by reversing the entire argl after making it,
+or by using append instead of cons to construct it in-order.
+
+Either way, the left-to-right approach is less efficient, because cons is simpler than append,
+and the reversing at the end is extra 'machine code' which the right-to-left evaluation doesn't
+introduce.

@@ -211,6 +211,7 @@
       (compile-procedure-call target linkage)))))
 
 (define (construct-arglist operand-codes)
+  (let ((operand-codes (reverse operand-codes)))
     (if (null? operand-codes)
         (make-instruction-sequence '() '(argl)
          '((assign argl (const ()))))
@@ -224,15 +225,15 @@
               (preserving '(env)
                code-to-get-last-arg
                (code-to-get-rest-args
-                (cdr operand-codes)))))))
-
+                (cdr operand-codes))))))))
 
 (define (code-to-get-rest-args operand-codes)
   (let ((code-for-next-arg
          (preserving '(argl)
           (car operand-codes)
           (make-instruction-sequence '(val argl) '(argl)
-           '((assign argl (op cons) (reg val) (reg argl)))))))
+           '((assign argl
+              (op cons) (reg val) (reg argl)))))))
     (if (null? (cdr operand-codes))
         code-for-next-arg
         (preserving '(env)
@@ -240,31 +241,39 @@
          (code-to-get-rest-args (cdr operand-codes))))))
 
 ;;;applying procedures
+;;5.47
 
 (define (compile-procedure-call target linkage)
   (let ((primitive-branch (make-label 'primitive-branch))
         (compiled-branch (make-label 'compiled-branch))
+		(compound-branch (make-label 'compound-branch))
         (after-call (make-label 'after-call)))
     (let ((compiled-linkage
            (if (eq? linkage 'next) after-call linkage)))
       (append-instruction-sequences
        (make-instruction-sequence '(proc) '()
         `((test (op primitive-procedure?) (reg proc))
-          (branch (label ,primitive-branch))))
+          (branch (label ,primitive-branch))
+		  (test (op compound-procedure?) (reg proc))
+		  (branch (label ,compound-branch))))
        (parallel-instruction-sequences
         (append-instruction-sequences
          compiled-branch
          (compile-proc-appl target compiled-linkage))
-        (append-instruction-sequences
-         primitive-branch
-         (end-with-linkage linkage
-          (make-instruction-sequence '(proc argl)
-                                     (list target)
-           `((assign ,target
-                     (op apply-primitive-procedure)
-                     (reg proc)
-                     (reg argl)))))))
-       after-call))))
+		(parallel-instruction-sequences
+		  (append-instruction-sequences
+			compound-branch
+			(compile-comp-proc-appl target compiled-linkage))
+		  (append-instruction-sequences
+			primitive-branch
+			(end-with-linkage linkage
+              (make-instruction-sequence '(proc argl)
+                                         (list target)
+                 `((assign ,target
+                           (op apply-primitive-procedure)
+                           (reg proc)
+                           (reg argl))))))))
+	   after-call))))
 
 ;;;applying compiled procedures
 
@@ -294,6 +303,34 @@
         ((and (not (eq? target 'val)) (eq? linkage 'return))
          (error "return linkage, target not val -- COMPILE"
                 target))))
+
+;compile-comp-proc-appl target compiled-linkage
+(define (compile-comp-proc-appl target linkage)
+  (cond ((and (eq? target 'val) (not (eq? linkage 'return)))
+		 (make-instruction-sequence '(proc) all-regs
+			`((assign continue (label ,linkage))
+			  (save continue)
+			  (goto (reg compapp)))))
+		((and (not (eq? target 'val))
+			  (not (eq? linkage 'return)))
+		 (let ((proc-return (make-label 'proc-return)))
+		   (make-instruction-sequence '(proc) all-regs
+			`((assign continue (label ,proc-return))
+			  (save continue)
+			  (goto (reg compapp))
+			  ,proc-return
+			  (assign ,target (reg val))
+			  (goto (label ,linkage))))))
+		((and (eq? target 'val) (eq? linkage 'return))
+		 (make-instruction-sequence '(proc continue) all-regs
+			'((save continue)
+			  (goto (reg compapp)))))
+		((and (not (eq? target 'val)) (eq? linkage 'return))
+		 (error "comp-proc: return linkage, target not val -- COMPILE" target))))
+
+
+
+
 
 ;; footnote
 (define all-regs '(env proc val argl continue))

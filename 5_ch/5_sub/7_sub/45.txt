@@ -1,0 +1,77 @@
+;Results from 5.27 (interpreted):
+n ->  tp :  md
+1 ->  16 :  08
+2 ->  48 :  13
+3 ->  80 :  18
+4 -> 112 :  23
+5 -> 144 :  28
+
+tp(n) = 32n - 16
+md(n) = 5n + 3
+
+;Results from 5.14 (hand-coded machine):
+n -> tp : md
+1 ->  0 :  0
+2 ->  2 :  2
+3 ->  4 :  4
+4 ->  6 :  6
+5 ->  8 :  8
+
+tp(n) = 2n - 2
+md(n) = 2n - 2
+
+;;Starting 5.45 (compiled code):
+n -> tp : md
+1 ->  7 :  3
+2 -> 13 :  5
+3 -> 19 :  8
+4 -> 25 : 11
+5 -> 31 : 14
+
+tp(n) = 6n + 1
+md(n) = 3n - 1
+
+
+Ratio of compiled to interpreted:
+rtp(n) = (6n + 1) / (32n - 16)
+rmd(n) = (3n - 1) / (5n + 3)
+Which have limits as n approaches inf:
+rtp(inf) = 6/32 = 3/16
+rmd(inf) = 3/5
+
+Ratio of special-purpose machine to interpreted:
+rtp(n) = (2n - 2) / (32n - 16)
+rmd(n) = (2n - 2) / (5n + 3)
+Which have limits as n approaches inf:
+rtp(inf) = 2/32 = 1/16
+rmd(inf) = 2/5
+
+
+
+b)
+The improvements suggested already throughout
+chapter 5 might a bit, since open-coding
+should get rid of some pushes.
+
+Big diff in tp.
+
+the compiled version might do some generalized
+set-up that makes the md deeper.
+
+More registers might spread out data
+so that less pushes are necessary.
+
+[From web: Better checking of which registers are
+modified and need the saves/restores.]
+
+
+
+
+
+
+
+
+
+
+
+
