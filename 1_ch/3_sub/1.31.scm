@@ -74,3 +74,4 @@
 (pi-product 1000)
 (pi-product 10000)
 (pi-product 100000)
+(pi-product 1000000)
